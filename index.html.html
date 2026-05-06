@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Thorana - අංගුලිමාල ජාතකය</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+.thorana {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.center img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));
+}
+
+.frame {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(17,17,17,0.1);
+    overflow: visible;
+    box-shadow: 0 0 25px rgba(255,215,0,0.5);
+}
+
+.frame img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    height: 95%;
+    object-fit: contain;
+    border-radius: 50%;
+    z-index: 1;
+    filter: drop-shadow(0 0 10px rgba(255,215,0,0.7));
+}
+
+.led {
+    position: absolute;
+    border-radius: 50%;
+    background: #111;
+    z-index: 3;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.title-text {
+    position: absolute;
+    left: 50%;
+    bottom: 0%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    text-align: center;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    line-height: 1.1;
+    white-space: pre-line;
+    z-index: 10;
+    pointer-events: none;
+    text-shadow: 0 0 15px #ffd700, 0 0 35px #ff8c00, 4px 4px 0 #000, -4px -4px 0 #000;
+    font-size: clamp(1.8vw, 3.5vw, 28px);
+}
+
+#soundBtn {
+    position: fixed;
+    bottom: 4px;
+    right: calc(50% - 200px);
+    z-index: 999;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 48px;
+    color: #ffd700;
+    background: rgba(0,0,0,0.9);
+    border: 2px solid #ffd700;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(255,215,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#soundBtn:hover {
+    background: rgba(255,215,0,0.3);
+    box-shadow: 0 0 25px rgba(255,215,0,0.9);
+    transform: scale(1.15);
+}
+
+#soundBtn.playing {
+    background: rgba(0,255,0,0.4);
+    border-color: #00ff00;
+    box-shadow: 0 0 20px rgba(0,255,0,0.8);
+    color: #fff;
+}
+</style>
+</head>
+
+<body>
+
+<div class="thorana" id="thorana"></div>
+
+<audio id="bgSound" loop preload="auto">
+    <source src="./Angulimala Damanaya 1 - M.V. Gunadasa.mp3" type="audio/mpeg">
+</audio>
+
+<button id="soundBtn" title="Play/Pause Sound">🔊</button>
+
+<script>
+const thorana = document.getElementById("thorana");
+const sound = document.getElementById("bgSound");
+const soundBtn = document.getElementById("soundBtn");
+
+const colors = ["red","lime","blue","yellow","cyan","magenta","orange","white","#00ffff"];
+let leds = [];
+let isPlaying = false;
+
+const frameImages = [
+    "your-image1.png", "your-image2.png", "your-image3.png", "your-image4.png",
+    "your-image5.png", "your-image6.png", "your-image7.png", "your-image8.png"
+];
+
+soundBtn.addEventListener("click", async () => {
+    try {
+        if (!isPlaying) {
+            sound.volume = 0.8;
+            sound.load();
+            await sound.play();
+            isPlaying = true;
+            soundBtn.textContent = "🔇";
+            soundBtn.classList.add("playing");
+        } else {
+            sound.pause();
+            sound.currentTime = 0;
+            isPlaying = false;
+            soundBtn.textContent = "🔊";
+            soundBtn.classList.remove("playing");
+        }
+    } catch (err) {
+        console.log("Audio play failed:", err);
+        alert("Audio play නොවුණා. bg-music.mp3 file එක හරි folder එකේ තියෙනවද බලන්න.");
+        isPlaying = false;
+        soundBtn.textContent = "🔊";
+        soundBtn.classList.remove("playing");
+    }
+});
+
+sound.addEventListener("ended", () => {
+    isPlaying = false;
+    soundBtn.textContent = "🔊";
+    soundBtn.classList.remove("playing");
+});
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && isPlaying) {
+        sound.pause();
+        isPlaying = false;
+        soundBtn.textContent = "🔊";
+        soundBtn.classList.remove("playing");
+    }
+});
+
+function createLED(cx, cy, radius, fraction, size) {
+    let led = document.createElement("div");
+    led.className = "led";
+    let angle = fraction * Math.PI * 2;
+    let x = cx + radius * Math.cos(angle);
+    let y = cy + radius * Math.sin(angle);
+    led.style.left = x + "px";
+    led.style.top = y + "px";
+    let s = Math.max(2.8, size * 0.0055);
+    led.style.width = s + "px";
+    led.style.height = s + "px";
+    return led;
+}
+
+function setup() {
+    thorana.innerHTML = `
+        <div class="center"><img src="your-image.png" alt="Center Image"></div>
+        <div class="title-text">අංගුලි<br>මාල ජාතක කතා වස්තුව</div>
+    `;
+
+    leds = [];
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    let size = Math.min(W, H);
+    let cx = W / 2;
+    let cy = H / 2;
+    let centerSize = size * 0.35;
+    let mainRadius = size * 0.42;
+
+    document.querySelector(".center").style.width = centerSize + "px";
+    document.querySelector(".center").style.height = centerSize + "px";
+
+    for (let r = 0; r < 8; r++) {
+        let count = 82 + r * 26;
+        let radius = centerSize / 2 + 25 + r * (size * 0.012);
+        for (let i = 0; i < count; i++) {
+            let led = createLED(cx, cy, radius, i / count, size);
+            thorana.appendChild(led);
+            leds.push(led);
+        }
+    }
+
+    for (let f = 0; f < 12; f++) {
+        let angle = (f / 8) * Math.PI * 2;
+        let frameSize = size * 0.155;
+        let fx = cx + mainRadius * Math.cos(angle) - frameSize / 2;
+        let fy = cy + mainRadius * Math.sin(angle) - frameSize / 2;
+
+        let frame = document.createElement("div");
+        frame.className = "frame";
+        frame.style.left = fx + "px";
+        frame.style.top = fy + "px";
+        frame.style.width = frameSize + "px";
+        frame.style.height = frameSize + "px";
+
+        let img = document.createElement("img");
+        img.src = frameImages[f] || "";
+        img.alt = `Frame ${f + 1}`;
+        img.onerror = function() { this.style.display = "none"; };
+        frame.appendChild(img);
+
+        for (let r = 0; r < 5; r++) {
+            let count = 64 + r * 18;
+            let radius = frameSize / 2 + 10 + r * (size * 0.008);
+            for (let i = 0; i < count; i++) {
+                let led = createLED(frameSize / 2, frameSize / 2, radius, i / count, size);
+                frame.appendChild(led);
+                leds.push(led);
+            }
+        }
+        thorana.appendChild(frame);
+    }
+}
+
+function running(t) { leds.forEach((l,i) => l.style.background = (i % 48 === Math.floor(t/60)%48) ? colors[i%colors.length] : "#222"); }
+function wave(t)   { leds.forEach((l,i) => l.style.background = Math.sin(i/5 + t/125) > 0.1 ? colors[i%colors.length] : "#222"); }
+function spiral(t) { leds.forEach((l,i) => l.style.background = Math.sin(i/3 + t/82) > 0.5 ? colors[(i + Math.floor(t/32)) % colors.length] : "#222"); }
+function sparkle() { leds.forEach(l => l.style.background = Math.random() > 0.82 ? colors[Math.random()*colors.length|0] : "#222"); }
+function pulse(t)  { let v = Math.sin(t/175); leds.forEach((l,i) => l.style.background = v > 0 ? colors[i%colors.length] : "#222"); }
+
+const modes = [running, wave, spiral, sparkle, pulse];
+let mode = 0;
+setInterval(() => mode = (mode + 1) % 5, 2600);
+
+function animate(t) {
+    modes[mode](t);
+    requestAnimationFrame(animate);
+}
+
+window.addEventListener("resize", setup);
+setup();
+animate(0);
+</script>
+
+</body>
+</html>
