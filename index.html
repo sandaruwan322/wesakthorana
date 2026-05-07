@@ -218,9 +218,9 @@ function setup() {
     document.querySelector(".center").style.width = centerSize + "px";
     document.querySelector(".center").style.height = centerSize + "px";
 
-    for (let r = 0; r < 8; r++) {
+    for (let r = 0; r < 10; r++) {
         let count = 82 + r * 26;
-        let radius = centerSize / 2 + 25 + r * (size * 0.012);
+        let radius = centerSize / 2 + 10 + r * (size * 0.012);
         for (let i = 0; i < count; i++) {
             let led = createLED(cx, cy, radius, i / count, size);
             thorana.appendChild(led);
